@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration
+PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<!-- 自定义映射类，制定其别名 -->
+	<typeAliases>
+		<package name="com.guigu.model"/><!-- 自动扫描包中的全部类,将其作为映射类指定其别名,别名自动以类名作为名称. -->
+	</typeAliases>
+	
+	<!-- 加载映射配置文件 -->
+	<mappers>
+		<mapper resource="com/guigu/mapping/Goodsadd.java"/>
+	</mappers>
+</configuration>

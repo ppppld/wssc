@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xmlns:tx="http://www.springframework.org/schema/tx"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc.xsd
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/aop
+	http://www.springframework.org/schema/aop/spring-aop.xsd
+	http://www.springframework.org/schema/tx 
+	http://www.springframework.org/schema/tx/spring-tx.xsd">
+	
+	<context:component-scan base-package="com.guigu.blservice"></context:component-scan>
+	
+	<!-- 加载怕配置文件 -->
+	<context:property-placeholder location="classpath:db.properties"/>
+	
+	<!-- 配置数据源 -->
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url" value="${jdbc.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<property name="maxActive" value="30"/>
+		<property name="maxIdle" value="5"/>
+	</bean>
+	
+	<!-- 配置SessionFactory -->
+	<bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource"/>
+		<!-- <property name="configLocation" value="classpath:SqlMapConfig.xml"/> -->
+		<property name="typeAliasesPackage" value="com.guigu.model"/>
+		<property name="mapperLocations" value="classpath:com/guigu/mapping/*.xml"/>
+
+	</bean>
+	
+	<!-- 配置SessionTemplate -->
+	<bean id="sqlSessionTemplate" class="org.mybatis.spring.SqlSessionTemplate">
+		<constructor-arg index="0" ref="sqlSessionFactory"/>
+	</bean>
+	
+	<!-- 设置事务 不同的数据库访问框架，管理事务的Spring类不同的-->
+	<bean id="txManager" class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	<!-- 事物主方法一定是public的，并且类名要以BL结尾-->
+	<tx:advice id="txAdvice" transaction-manager="txManager">
+		<tx:attributes>
+			<tx:method name="find*" read-only="true"/><!-- 查询 -->
+			<tx:method name="exec*" propagation="REQUIRED" rollback-for="java.lang.Exception"/><!-- 执行 -->
+		</tx:attributes>
+	</tx:advice> 
+	
+	<!-- 默认proxy-target-class="false"，必须在接口中添加抽象方法，因为对于其实现类的方法调用，只能通过接口引用名。 -->
+	<aop:config>
+		<aop:pointcut id="bussinessService" expression="execution(public * com.guigu.blservice..*BL.*(..))"/>
+		<aop:advisor pointcut-ref="bussinessService" advice-ref="txAdvice"/>
+	</aop:config>
+
+	<!-- 事物主方法一定是public的，并且类名要以BL结尾-->
+	
+	<!-- 配置DAO -->
+	<bean id="goodsDAOimpl" class="com.guigu.dao.impl.GoodsDAOimpl">
+		<property name="sqlSessionTemplate" ref="sqlSessionTemplate"/>
+	</bean>
+	
+	<!-- 配置BL -->
+	<bean id="goodsBL" class="com.guigu.blservice.impl.GoodsBLimpl"/>
+</beans>

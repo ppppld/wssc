@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="goods">	
+	<select id="querry" resultType="Goods" parameterType="java.util.Map">
+		select * from c_goods
+	</select>
+	
+	<delete id="goodsdelete"  parameterType="java.util.Map">
+		delete from c_goods where goodsid=#{goodsid}
+	</delete>	
+</mapper>
